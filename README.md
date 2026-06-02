@@ -4,13 +4,13 @@ Geospatial Visualization with R
 
 <p align="center">
 
-<a href="presentation.html">
+<a href="https://erdemzkul.github.io/RGeoVis/prs1.html#/title-slide">
 
   <img src="https://img.shields.io/badge/Presentation-HTML-blue?style=for-the-badge">
 
 </a>
 
-<a href="handout.html">
+<a href="https://erdemzkul.github.io/RGeoVis/handout.html">
 
   <img src="https://img.shields.io/badge/Handout-HTML-green?style=for-the-badge">
 
@@ -40,7 +40,7 @@ Geospatial Visualization with R
 
 <div align="center">
 
-<img src="handout_qr.png" width="250">
+<img src="https://erdemzkul.github.io/RGeoVis/qr.png" width="250">
 
 </div>
 
