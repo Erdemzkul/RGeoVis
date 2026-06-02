@@ -2,25 +2,24 @@
 
 Geospatial Visualization with R
 
-Repository for the presentation and handout prepared for:
-
-**Data Analysis for Decision-Making (SS 2026)**  
-Hochschule Fresenius
-
----
-
 <p align="center">
 
-<a href="https://github.com/Erdemzkul/RGeoVis/raw/main/handout.pdf">
-  <img src="https://img.shields.io/badge/Handout-PDF-red?style=for-the-badge">
+<a href="presentation.html">
+
+  <img src="https://img.shields.io/badge/Presentation-HTML-blue?style=for-the-badge">
+
+</a>
+
+<a href="handout.html">
+
+  <img src="https://img.shields.io/badge/Handout-HTML-green?style=for-the-badge">
+
 </a>
 
 <a href="https://rpubs.com/Erdemzkul/1437179">
-  <img src="https://img.shields.io/badge/Presentation-RPubs-blue?style=for-the-badge">
-</a>
 
-<a href="https://erdemzkul.github.io/RGeoVis/handout.html">
-  <img src="https://img.shields.io/badge/Website-HTML-green?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Website-RPubs-orange?style=for-the-badge">
+
 </a>
 
 </p>
