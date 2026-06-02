@@ -1,0 +1,343 @@
+---
+title: "Geospatial Visualization with R"
+author: 
+  - name: "Vedat Erdem Özkul"
+
+    affiliations:
+
+      - name: "Fresenius University of Applied Sciences"
+
+    
+    
+institute: "E-mail: ozkul.vedat@stud.hs-fresenius.de------------           
+
+            Matriculation Number: 401136761"
+
+date: 06.02.2026
+date-format: "DD.MM.YYYY"
+
+subtitle: "-----------------Data Analysis for Decision-Making (SS 2026)---------- -----------------E-mail: ozkul.vedat@stud.hs-fresenius.de------------- ------------------Matriculation Number: 401136761------------------"
+
+format:
+
+  pdf:
+
+    toc: true
+
+    number-sections: true
+
+    fontsize: 11pt
+
+    geometry:
+
+      - margin=2.5cm
+
+    colorlinks: true
+
+execute:
+
+  echo: true
+
+  warning: false
+
+  message: false
+
+---
+
+
+# Overview
+
+Geospatial visualization represents information that is connected to location. Instead of only asking *what* is happening, geospatial analysis also asks *where* it is happening.
+
+This is important for decision-making because many business, social, environmental and planning questions have a spatial dimension. Maps can reveal patterns that are difficult to understand from tables alone.
+
+Typical applications include urban planning, transportation analysis, logistics, environmental monitoring, market analysis and business intelligence.
+
+Presentation Website:
+
+[RPubs Presentation](https://rpubs.com/Erdemzkul/1437179)
+
+# What is Geospatial Data?
+
+Geospatial data is information linked to a location on Earth. Examples include roads, buildings, cities, countries, rivers, administrative borders, population density and satellite imagery.
+
+A geospatial dataset usually contains two parts:
+
+| Component | Meaning |
+|---|---|
+| Attribute data | Describes the object |
+| Geometry data | Describes where the object is located |
+
+For example, a city dataset may include the city name, country name, population and geometry.
+
+# Vector and Raster Data
+
+There are two major types of geospatial data: vector data and raster data.
+
+## Vector Data
+
+Vector data represents discrete objects.
+
+| Geometry Type | Meaning | Examples |
+|---|---|---|
+| Point | Single location | city, shop, bus stop |
+| Line | Connected locations | road, railway, river |
+| Polygon | Area | country, district, building |
+
+Vector data is useful when individual objects or boundaries are important.
+
+## Raster Data
+
+Raster data represents space as a grid of cells or pixels. Each cell contains a value.
+
+Examples include elevation, temperature, satellite imagery, population density and heatmaps. Raster data is useful for continuous surfaces.
+
+# Layer Concept
+
+A map can be understood as a combination of layers. For example, a map may include country boundaries, city points, roads, rivers and population data.
+
+Each layer contains a different type of spatial information. By combining layers, analysts can examine relationships between different spatial phenomena.
+
+# Why Use R?
+
+R is useful for geospatial analysis because it supports both data analysis and visualization in the same workflow.
+
+R can be used to load spatial data, inspect datasets, transform data, filter observations, create maps and document the workflow reproducibly.
+
+# Packages Used
+
+```{r}
+library(sf)
+library(tidyverse)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+```
+
+| Package | Purpose |
+|---|---|
+| `sf` | Working with spatial vector data |
+| `tidyverse` | Data manipulation and cleaning |
+| `ggplot2` | Visualization |
+| `rnaturalearth` | Access to Natural Earth map data |
+| `rnaturalearthdata` | Supporting map datasets |
+
+# Loading Spatial Data
+
+Instead of using a large local shapefile, this workflow uses data from the `rnaturalearth` package. This makes the workflow lighter and easier to share on GitHub.
+
+```{r}
+world <- ne_countries(
+  scale = "medium",
+  returnclass = "sf"
+)
+
+germany <- world |>
+  filter(admin == "Germany")
+```
+
+The object `world` contains country geometries. The object `germany` is created by filtering the world dataset for Germany.
+
+# Inspecting the Dataset
+
+Before creating a map, the dataset should be inspected. A data analyst should not use a dataset blindly.
+
+Instead of printing all columns, it is better to select the relevant ones.
+
+```{r}
+germany |>
+  select(admin, name, continent, pop_est, gdp_md, geometry)
+```
+
+Useful functions for dataset inspection include:
+
+```{r eval=FALSE}
+names(germany)
+glimpse(germany)
+head(germany)
+summary(germany)
+View(germany)
+```
+
+These functions help identify available variables, data types, relevant columns and possible filters.
+
+# Coordinate Reference System
+
+Every spatial dataset has a coordinate reference system. The CRS defines how coordinates are connected to real-world locations.
+
+```{r}
+st_crs(germany)$input
+```
+
+In this example, the dataset uses WGS 84. This is a common geographic coordinate system used in global datasets.
+
+# Basic Vector Map
+
+A first map can be created by plotting Germany as a polygon.
+
+```{r, fig.height=3.5, fig.width=5.5}
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey90",
+    color = "black"
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Germany",
+    subtitle = "Country boundary loaded with rnaturalearth"
+  )
+```
+
+This map shows one vector layer: the country boundary of Germany.
+
+# In-Class Activity: Mapping German Cities
+
+The in-class activity builds a map step by step. The goal is to add city points, combine spatial layers, filter cities by population and interpret the result.
+
+## Step 1: Add Cities
+
+```{r}
+cities <- ne_download(
+  scale = 10,
+  type = "populated_places",
+  category = "cultural",
+  returnclass = "sf"
+)
+
+germany_cities <- cities |>
+  filter(ADM0NAME == "Germany")
+```
+
+To inspect the largest cities:
+
+```{r}
+germany_cities |>
+  select(NAME, POP_MAX) |>
+  arrange(desc(POP_MAX)) |>
+  head(10)
+```
+
+The column `POP_MAX` can be used for filtering.
+
+## Step 2: Combine Spatial Layers
+
+```{r, fig.height=3.5, fig.width=5.5}
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey95",
+    color = "black"
+  ) +
+  geom_sf(
+    data = germany_cities,
+    size = 0.8,
+    alpha = 0.5
+  ) +
+  theme_minimal() +
+  labs(
+    title = "German Cities",
+    subtitle = "Country boundary and populated places"
+  )
+```
+
+This map combines two vector layers: Germany as a polygon layer and German cities as a point layer.
+
+## Step 3: Filter the Dataset
+
+Spatial datasets can contain many observations. To reduce complexity, the data can be filtered.
+
+```{r}
+germany_cities_major <- germany_cities |>
+  filter(POP_MAX > 500000)
+```
+
+```{r, fig.height=3.5, fig.width=5.5}
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey95",
+    color = "black"
+  ) +
+  geom_sf(
+    data = germany_cities_major,
+    size = 2
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Major German Cities",
+    subtitle = "Cities with population above 500,000"
+  )
+```
+
+Filtering changes the map from a dense set of city points into a simplified map of major cities. This supports decision-making because maps should show the data that is relevant to the analytical question.
+
+## Step 4: Interpret the Map
+
+Discussion questions:
+
+- What changed after filtering?
+- Why is filtering useful before visualization?
+- Which cities remain visible?
+- How can this support decision-making?
+
+# Data Understanding Before Visualization
+
+Visualization should not start with plotting. It should start with understanding the dataset.
+
+Before creating a map, analysts should ask:
+
+- What does the dataset contain?
+- What are the variables?
+- What does each column mean?
+- Which variable should be mapped?
+- Which observations should be included?
+- Is filtering necessary?
+
+This workflow shows that data understanding, filtering and visualization are connected parts of the same analytical process.
+
+# Key Takeaways
+
+- Geospatial data connects information to location.
+- Vector data represents discrete objects such as points, lines and polygons.
+- Raster data represents continuous surfaces such as elevation or temperature.
+- Maps are created by combining spatial layers.
+- R provides reproducible workflows for geospatial analysis.
+- Data should be inspected before visualization.
+- Filtering can make spatial patterns easier to interpret.
+
+# 11. Affidavit
+
+I hereby affirm that this submitted paper was authored unaided and solely by me. Additionally, no other sources than those in the reference list were used. Parts of this paper, including tables and figures, that have been taken either verbatim or analogously from other works have in each case been properly cited with regard to their origin and authorship. This paper either in parts or in its entirety, be it in the same or similar form, has not been submitted to any other examination board and has not been published.
+
+I acknowledge that the university may use plagiarism detection software to check my thesis. I agree to cooperate with any investigation of suspected plagiarism and to provide any additional information or evidence requested by the university.
+
+## Checklist
+
+- [x] The handout contains 3–5 pages of text.
+- [x] The submission contains the Quarto file of the handout.
+- [x] The submission contains the Quarto file of the presentation.
+- [x] The submission contains the HTML file of the handout.
+- [x] The submission contains the HTML file of the presentation.
+- [x] The submission contains the PDF file of the handout.
+- [x] The submission contains the PDF file of the presentation.
+- [x] The title page of the presentation and the handout contain personal details (name, email, matriculation number).
+- [x] The handout contains a bibliography, created using BibTeX with an APA citation style.
+- [x] Either the handout or the presentation contains R code that proves expertise in coding.
+- [x] The filled out Affidavit.
+- [x] The link to the presentation and the handout published on GitHub.
+
+<br>
+
+*Name:* Vedat Erdem Özkul\
+*Date:* 02.06.2026\
+*Place:* Cologne, Germany
+
+
+# References
+
+Huber, S. (n.d.). *How to Use R for Data Science*. Retrieved from https://hubchev.github.io/ds/How-to-Use-R-for-Data-Science.pdf
+
+Lovelace, R., Nowosad, J., & Muenchow, J. (2019). *Geocomputation with R*. CRC Press. https://doi.org/10.1201/9780203730058
+
+Pebesma, E., & Bivand, R. (2023). *Spatial Data Science: With Applications in R*. Chapman and Hall/CRC. https://doi.org/10.1201/9780429459016

@@ -1,0 +1,382 @@
+---
+title: "Geospatial Visualization with R"
+author: "Vedat Erdem Özkul"
+institute: "Hochschule Fresenius"
+
+date: "02.06.2026"
+
+subtitle: "------Email: ozkul.vedat@stud.hs-fresenius.de------ Matriculation Number: 401136761"
+
+format:
+
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    embed-resources: true
+
+  pdf:
+    toc: false
+    number-sections: false
+    geometry:
+      - margin=2.5cm
+    fontsize: 11pt
+
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Why Geospatial Visualization Matters
+
+- Understand spatial patterns
+- Support decision-making
+- Explore relationships between places
+- Transform data into visual insight
+
+------------------------------------------------------------------------
+
+## What is Geospatial Data?
+
+Geospatial data is information linked to a location.
+
+Examples:
+
+- Roads
+- Buildings
+- Cities
+- Countries
+- Rivers
+
+------------------------------------------------------------------------
+
+## Vector vs Raster Data
+
+| Vector    | Raster              |
+|-----------|---------------------|
+| Points    | Cells               |
+| Lines     | Pixels              |
+| Polygons  | Continuous surfaces |
+| Roads     | Elevation           |
+| Buildings | Temperature         |
+
+------------------------------------------------------------------------
+
+## Layer Concept
+
+A map is built from multiple layers.
+
+Examples:
+
+- Country boundaries
+- Cities
+- Roads
+- Population
+
+Layers can be combined to answer spatial questions.
+
+------------------------------------------------------------------------
+
+## Why Use R?
+
+R provides:
+
+- Reproducible workflows
+- Data transformation
+- Visualization
+- Spatial analysis
+- Open-source tools
+
+------------------------------------------------------------------------
+
+## Packages
+
+```{r}
+library(sf)
+library(tidyverse)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+```
+
+------------------------------------------------------------------------
+
+## Load Spatial Data
+
+::::: columns
+::: {.column width="50%"}
+```{r eval=FALSE}
+world <- ne_countries(
+  scale = "medium",
+  returnclass = "sf"
+)
+
+germany <- world |>
+  filter(admin == "Germany")
+```
+:::
+
+::: {.column width="50%"}
+```{r echo=FALSE}
+world <- ne_countries(
+  scale = "medium",
+  returnclass = "sf"
+)
+
+germany <- world |>
+  filter(admin == "Germany")
+
+germany
+```
+:::
+:::::
+
+------------------------------------------------------------------------
+
+## Coordinate Reference System
+
+::::: columns
+::: {.column width="50%"}
+```{r eval=FALSE}
+st_crs(germany)
+```
+:::
+
+::: {.column width="50%"}
+```{r echo=FALSE}
+st_crs(germany)
+```
+:::
+:::::
+
+------------------------------------------------------------------------
+
+## Basic Vector Map
+
+::::: columns
+::: {.column width="50%"}
+```{r eval=FALSE}
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey90",
+    color = "black"
+  ) +
+  theme_minimal()
+```
+:::
+
+::: {.column width="50%"}
+```{r echo=FALSE}
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey90",
+    color = "black"
+  ) +
+  theme_minimal()
+```
+:::
+:::::
+
+------------------------------------------------------------------------
+
+## A Question You Should Have Asked
+
+Before creating a map:
+
+"How do we know what is inside this dataset?"
+
+We should never use a dataset blindly.
+
+## Useful functions:
+
+names(xxxx)
+
+glimpse(xxxx)
+
+These functions help us discover:
+
+- available variables
+- data types
+- relevant columns
+- possible filters
+
+Only then we can decide what to visualize.
+
+## In-Class Activity: Mapping German Cities
+
+In this activity, we will build a map step by step.
+
+Goal:
+
+- add city points
+- combine spatial layers
+- filter cities by population
+- interpret the result
+
+------------------------------------------------------------------------
+
+## Activity Step 1: Add Cities
+
+::::: columns
+::: {.column width="50%"}
+```{r eval=FALSE}
+cities <- ne_download(
+  scale = 10,
+  type = "populated_places",
+  category = "cultural",
+  returnclass = "sf"
+)
+
+germany_cities <- cities |>
+  filter(ADM0NAME == "Germany")
+```
+:::
+
+::: {.column width="50%"}
+```{r echo=FALSE}
+cities <- ne_download(
+  scale = 10,
+  type = "populated_places",
+  category = "cultural",
+  returnclass = "sf"
+)
+
+germany_cities <- cities |>
+  filter(ADM0NAME == "Germany")
+
+germany_cities |>
+  select(NAME, POP_MAX) |>
+  arrange(desc(POP_MAX)) |>
+  head(8)
+```
+:::
+:::::
+
+------------------------------------------------------------------------
+
+## Activity Step 2: Combine Spatial Layers
+
+::::: columns
+::: {.column width="50%"}
+```{r eval=FALSE}
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey95",
+    color = "black"
+  ) +
+  geom_sf(
+    data = germany_cities,
+    size = 0.8,
+    alpha = 0.5
+  ) +
+  theme_minimal()
+```
+:::
+
+::: {.column width="50%"}
+```{r echo=FALSE, fig.width=6, fig.height=6}
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey95",
+    color = "black"
+  ) +
+  geom_sf(
+    data = germany_cities,
+    size = 0.8,
+    alpha = 0.5
+  ) +
+  theme_minimal() +
+  labs(
+    title = "German Cities",
+    subtitle = "Country boundary and populated places"
+  )
+```
+:::
+:::::
+
+------------------------------------------------------------------------
+
+## Activity Step 3: Filter the Dataset
+
+::::: columns
+::: {.column width="50%"}
+```{r eval=FALSE}
+germany_cities_major <- germany_cities |>
+  filter(POP_MAX > 500000)
+
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey95",
+    color = "black"
+  ) +
+  geom_sf(
+    data = germany_cities_major,
+    size = 2
+  ) +
+  theme_minimal()
+```
+:::
+
+::: {.column width="50%"}
+```{r echo=FALSE, fig.width=6, fig.height=6}
+germany_cities_major <- germany_cities |>
+  filter(POP_MAX > 500000)
+
+ggplot() +
+  geom_sf(
+    data = germany,
+    fill = "grey95",
+    color = "black"
+  ) +
+  geom_sf(
+    data = germany_cities_major,
+    size = 2
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Major German Cities",
+    subtitle = "Cities with population above 500,000"
+  )
+```
+:::
+:::::
+
+------------------------------------------------------------------------
+
+## Activity Step 4: Interpret the Map
+
+Discussion questions:
+
+- What changed after filtering?
+- Why is filtering useful before visualization?
+- Which cities remain visible?
+- How can this support decision-making?
+
+## Key Takeaways
+
+- Geospatial data connects information to location.
+- Vector and raster data serve different purposes.
+- Layers can be combined.
+- R provides reproducible geospatial workflows.
+
+------------------------------------------------------------------------
+
+## References
+
+Lovelace, R., Nowosad, J., & Muenchow, J. (2019). *Geocomputation with R*.
+
+Pebesma, E., & Bivand, R. (2023). *Spatial Data Science with Applications in R*.
+
+Huber, S. (n.d.). *How to Use R for Data Science*.
+
+------------------------------------------------------------------------
+
+## Questions?
+
+Thank you.
