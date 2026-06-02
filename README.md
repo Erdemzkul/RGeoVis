@@ -40,7 +40,7 @@ Geospatial Visualization with R
 
 <div align="center">
 
-<img src="https://erdemzkul.github.io/RGeoVis/qr.png" width="250">
+<img src="https://erdemzkul.github.io/RGeoVis/qr.jpeg" width="350">
 
 </div>
 
